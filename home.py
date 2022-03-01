@@ -113,5 +113,5 @@ with center_col:
             f'{API_ENDPOINT}/get_payment_link', json={'oats': 1, 'fruit': 3})
         print(response.text)
         from utils import go_to_link
-        go_to_link(response.text)
-        # st.markdown("[Click here to complete checkout](%s)" % response.text)
+        # go_to_link(response.text)
+        st.markdown("[Click here to complete checkout](%s)" % response.text)
