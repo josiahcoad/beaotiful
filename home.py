@@ -47,7 +47,7 @@ with col1:
             size = int(first["size"]) if int(first["size"]) == first["size"] else first["size"]
             st.text(f'{size} cup, ${first["cost"]} each')
             for option in groups[category]:
-                benefits = df_.loc[option].drop(['category', 'cost'])
+                benefits = df_.loc[option].drop(['category', 'cost', 'size'])
                 benefits = ', '.join(benefits[benefits == 1].index)
                 if option in micronutrients.index:
                     mymicro = micronutrients.loc[option] 
