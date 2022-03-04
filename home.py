@@ -59,7 +59,7 @@ with col1:
     checkboxes[granola] = st.checkbox(
         f'{granola} ({size} cups, ${df_.loc[granola, "cost"]})', value=False, help=benefits)
 
-    st.text(f"Now add a ton of toppings!")
+    st.text(f"Now add all your\nfavorite toppings!")
     for category in categories[1:]:
         # todo: add a (1/6) logic to each section
         # todo: pull out the bases from the option logic and make radio button
@@ -109,8 +109,16 @@ center_col = st.columns(3)[1]
 with center_col:
     clicked = st.button('Check Out!')
     if clicked:
+        group_counts = joined.groupby('category').selected.sum().drop('🥣 base').astype(int)
+        group_counts.index = group_counts.index.to_series().apply(lambda name: name[2:])
+        group_counts = group_counts[group_counts > 0]
+        if checkboxes[oats]:
+            group_counts['oats'] = 1
+        elif checkboxes[granola]:
+            group_counts['granola'] = 1
+        print(group_counts.to_dict())
         response = requests.post(
-            f'{API_ENDPOINT}/get_payment_link', json={'oats': 1, 'fruit': 3})
+            f'{API_ENDPOINT}/get_payment_link', json=group_counts.to_dict())
         print(response.text)
         from utils import go_to_link
         # go_to_link(response.text)
