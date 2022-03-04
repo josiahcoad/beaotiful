@@ -24,7 +24,7 @@ API_ENDPOINT = 'https://c4s1pb1xef.execute-api.us-west-2.amazonaws.com/api/'
 # todo: use session state to save user progress incase of webpage crash
 # todo: show price per service instead of servings
 
-st.title('Beoatiful Order Form')
+st.title('🌅 Beoatiful Meals')
 categories = ["🥣 base", "🍓 fruit", "🥜 nuts", "🌻 seeds",
               "💥 powder", "💪 protein", "🍫 treats", "🍯 sweetener"]
 df = pd.read_csv('nutritional_benefits.csv')
@@ -33,7 +33,26 @@ micronutrients = pd.read_csv('micronutrients.csv').set_index('item')
 groups = df.groupby('category').item.apply(list).to_dict()
 df_ = df.set_index('item')
 checkboxes = {}
-col1, col2 = st.columns((1, 2))
+
+with st.expander("How this works", True):
+    st.markdown('''Easy to order! Start by choosing your base. Then add however many toppings you want.
+Once you order, I'll mix it all and send it out — ready to eat!
+
+🚚 FREE Shipping on orders over \$41 (else $10 shipping)
+
+Your total order will make ~30 servings of breakfast!
+
+100% OF PROFITS GO BACK TO HELPING THE HOMELESS IN AUSTIN!
+
+In the spirit of complete transparency, you can view our balance sheet and receipts [here](https://bit.ly/3LT3Bw4).
+
+Start every day off with a nutritionally packed breakfast while at the same time knowing that you're helping end hunger in Austin.
+
+Beoatiful breakfast is almost too easy to make. Just throw some mix in the bowl, add hot water and whala!''')    
+
+
+col1, col2 = st.columns((1, 1))
+
 
 
 def make_int_if_whole(number):
@@ -59,7 +78,6 @@ with col1:
     checkboxes[granola] = st.checkbox(
         f'{granola} ({size} cups, ${df_.loc[granola, "cost"]})', value=False, help=benefits)
 
-    st.text(f"Now add all your\nfavorite toppings!")
     for category in categories[1:]:
         # todo: add a (1/6) logic to each section
         # todo: pull out the bases from the option logic and make radio button
