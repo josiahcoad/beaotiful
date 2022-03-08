@@ -138,6 +138,8 @@ with center_col:
             group_counts['oats'] = 1
         elif checkboxes[granola]:
             group_counts['granola'] = 1
+        if total_cost < 41:
+            group_counts['shipping'] = 1
         response = requests.post(
             API_ENDPOINT + 'get_payment_link', json=group_counts.to_dict())
         if response.ok:
