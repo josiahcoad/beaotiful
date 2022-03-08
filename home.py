@@ -159,5 +159,4 @@ if st.session_state.checkout_link:
         requests.post(API_ENDPOINT + 'orders', json={
             'shipping': responses, 'order': joined.to_json()
         })
-
-    st.markdown(f'[Finish checkout]({st.session_state.checkout_link})')
+        st.markdown(f'[Finish checkout]({st.session_state.checkout_link})')
