@@ -145,8 +145,16 @@ with center_col:
         else:
             print(response)
 
+
+def address_form():
+    fields = ["name", "street1", "city", "state", "zip", "country", "phone",
+              "email"]
+    st.markdown('Please enter your order details.')
+    return {field: st.text_input(f'{field.title()}:') for field in fields}
+
+
 if st.session_state.checkout_link:
-    responses = utils.address_form()
+    responses = address_form()
     if all(responses.values()):
         requests.post(API_ENDPOINT + 'orders', json={
             'shipping': responses, 'order': joined.to_json()
