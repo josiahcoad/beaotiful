@@ -8,3 +8,14 @@ def go_to_link(url):
     html = '<img src onerror="{}">'.format(js)
     div = Div(text=html)
     st.bokeh_chart(div)
+
+
+def form(fields, explaination=""):
+    st.markdown(explaination)
+    return {field: st.text_input(f'{field.title()}:') for field in fields}
+
+
+def address_form():
+    fields = ["name", "street1", "city", "state", "zip", "country", "phone",
+              "email"]
+    return form(fields, 'Please enter your order details.')

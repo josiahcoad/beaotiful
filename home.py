@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import requests
+import utils
 API_ENDPOINT = 'https://c4s1pb1xef.execute-api.us-west-2.amazonaws.com/api/'
 
 # todo: integrate stripe invoice page
@@ -48,11 +49,10 @@ In the spirit of complete transparency, you can view our balance sheet and recei
 
 Start every day off with a nutritionally packed breakfast while at the same time knowing that you're helping end hunger in Austin.
 
-Beoatiful breakfast is almost too easy to make. Just throw some mix in the bowl, add hot water and whala!''')    
+Beoatiful breakfast is almost too easy to make. Just throw some mix in the bowl, add hot water and whala!''')
 
 
 col1, col2 = st.columns((1, 1))
-
 
 
 def make_int_if_whole(number):
@@ -69,7 +69,6 @@ with col1:
     benefits = ', '.join(benefits[benefits == 1].index)
     checkboxes[oats] = st.checkbox(
         f'{oats} ({size} cups, ${df_.loc["oats", "cost"]})', value=False, help=benefits)
-
 
     granola = groups[base][1]
     size = make_int_if_whole(df_.loc[granola, "size"])
@@ -124,20 +123,33 @@ with st.sidebar:
 
 center_col = st.columns(3)[1]
 
+if 'checkout_link' not in st.session_state:
+    st.session_state.checkout_link = ''
+
 with center_col:
     clicked = st.button('Check Out!')
     if clicked:
-        group_counts = joined.groupby('category').selected.sum().drop('🥣 base').astype(int)
-        group_counts.index = group_counts.index.to_series().apply(lambda name: name[2:])
+        group_counts = joined.groupby(
+            'category').selected.sum().drop('🥣 base').astype(int)
+        group_counts.index = group_counts.index.to_series().apply(
+            lambda name: name[2:])
         group_counts = group_counts[group_counts > 0]
         if checkboxes[oats]:
             group_counts['oats'] = 1
         elif checkboxes[granola]:
             group_counts['granola'] = 1
-        print(group_counts.to_dict())
         response = requests.post(
-            f'{API_ENDPOINT}/get_payment_link', json=group_counts.to_dict())
-        print(response.text)
-        from utils import go_to_link
-        # go_to_link(response.text)
-        st.markdown("[Click here to complete checkout](%s)" % response.text)
+            API_ENDPOINT + 'get_payment_link', json=group_counts.to_dict())
+        if response.ok:
+            st.session_state.checkout_link = response.text
+        else:
+            print(response)
+
+if st.session_state.checkout_link:
+    responses = utils.address_form()
+    if all(responses.values()):
+        requests.post(API_ENDPOINT + 'orders', json={
+            'shipping': responses, 'order': joined.to_json()
+        })
+
+    st.markdown(f'[Finish checkout]({st.session_state.checkout_link})')
