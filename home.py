@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import requests
-import utils
+# 'http://localhost:8000/'
 API_ENDPOINT = 'https://c4s1pb1xef.execute-api.us-west-2.amazonaws.com/api/'
 
 # todo: integrate stripe invoice page
@@ -156,7 +156,8 @@ def address_form():
 if st.session_state.checkout_link:
     responses = address_form()
     if all(responses.values()):
-        requests.post(API_ENDPOINT + 'orders', json={
-            'shipping': responses, 'order': joined.to_json()
+        response = requests.post(API_ENDPOINT + 'orders', json={
+            'shipping': responses,
+            'order': checkboxes[checkboxes == True].index.values.tolist()
         })
         st.markdown(f'[Finish checkout]({st.session_state.checkout_link})')
