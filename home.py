@@ -122,7 +122,7 @@ with st.sidebar:
     if total_servings:
         st.text(
             f'Cost Per Serving: ${round(total_cost/total_servings, 2) if total_servings else "":.2f}')
-    st.text(f'Until Free Shipping: ${41-total_cost}')
+    st.text(f'Until Free Shipping: ${max(41-total_cost, 0)}')
 
 center_col = st.columns(3)[1]
 
@@ -157,19 +157,13 @@ if left_to_do:
     st.text(f'Please finish: {", ".join(left_to_do)}')
 else:
     order = checkboxes[checkboxes == True].index.values.tolist()
-    response = requests.post(API_ENDPOINT + 'orders', json={
-        'shipping': shipping,
-        'order': order
-    })
 
-    print(group_counts.to_dict())
     response = requests.post(
         API_ENDPOINT + 'get_payment_link', json=
         {'groups': group_counts.to_dict(),
         'shipping': shipping,
         'order': order
         })
-    print(response.text)
 
     checkout_link = response.text
 
