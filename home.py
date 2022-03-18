@@ -24,6 +24,9 @@ API_ENDPOINT = 'https://c4s1pb1xef.execute-api.us-west-2.amazonaws.com/api/'
 # todo: think about data schema a little more (but not too much more)
 # todo: use session state to save user progress incase of webpage crash
 # todo: show price per service instead of servings
+# todo: frontend address verification
+# todo: make address-filloit a form
+# todo: stripe hook
 
 st.title('🌅 Beoatiful Meals')
 categories = ["🥣 base", "🍓 fruit", "🥜 nuts", "🌻 seeds",
@@ -123,11 +126,16 @@ with st.sidebar:
 
 center_col = st.columns(3)[1]
 
-if 'checkout_link' not in st.session_state:
-    st.session_state.checkout_link = ''
+
+required_fields = ["name", "street1", "city", "state", "zip", "country", "phone",
+            "email"]
+
+def address_form():
+    st.markdown('Please enter your order details.')
+    return {field: st.text_input(f'{field.title()}:') for field in required_fields}
 
 with center_col:
-    clicked = st.button('Check Out!')
+    clicked = True #st.button('Check Out!')
     if clicked:
         group_counts = joined.groupby(
             'category').selected.sum().drop('🥣 base').astype(int)
@@ -140,26 +148,30 @@ with center_col:
             group_counts['granola'] = 1
         if total_cost < 41:
             group_counts['shipping'] = 1
-        response = requests.post(
-            API_ENDPOINT + 'get_payment_link', json=group_counts.to_dict())
-        if response.ok:
-            st.session_state.checkout_link = response.text
-        else:
-            print(response)
 
+        shipping = address_form()
 
-def address_form():
-    fields = ["name", "street1", "city", "state", "zip", "country", "phone",
-              "email"]
-    st.markdown('Please enter your order details.')
-    return {field: st.text_input(f'{field.title()}:') for field in fields}
+        left_to_do = set(required_fields) - set([key for key, val in shipping.items() if val])
 
+if left_to_do:
+    st.text(f'Please finish: {", ".join(left_to_do)}')
+else:
+    order = checkboxes[checkboxes == True].index.values.tolist()
+    response = requests.post(API_ENDPOINT + 'orders', json={
+        'shipping': shipping,
+        'order': order
+    })
 
-if st.session_state.checkout_link:
-    responses = address_form()
-    if all(responses.values()):
-        response = requests.post(API_ENDPOINT + 'orders', json={
-            'shipping': responses,
-            'order': checkboxes[checkboxes == True].index.values.tolist()
+    print(group_counts.to_dict())
+    response = requests.post(
+        API_ENDPOINT + 'get_payment_link', json=
+        {'groups': group_counts.to_dict(),
+        'shipping': shipping,
+        'order': order
         })
-        st.markdown(f'[Finish checkout]({st.session_state.checkout_link})')
+    print(response.text)
+
+    checkout_link = response.text
+
+    with center_col:
+        st.markdown(f'[Finish checkout]({checkout_link})')
